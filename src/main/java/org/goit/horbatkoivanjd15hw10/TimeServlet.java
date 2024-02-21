@@ -1,28 +1,49 @@
 package org.goit.horbatkoivanjd15hw10;
 
-import java.io.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "helloServlet", value = "/hello-servlet")
-public class HelloServlet extends HttpServlet {
+@SuppressWarnings("checkstyle:MissingJavadocType")
+@WebServlet(name = "TimeServlet", value = "/time")
+public class TimeServlet extends HttpServlet {
 
-    private String message;
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    resp.setContentType("text/html");
+    PrintWriter out = resp.getWriter();
+    String timezone = req.getParameter("timezone");
+    LocalDateTime currentTime;
+    String formattedTime;
 
-    public void init() {
-        message = "Hello World!";
+    if (timezone != null && !timezone.isEmpty()) {
+      if (timezone.contains(" ")) {
+        timezone = timezone.replace(" ", "+");
+      }
+      ZoneId zone = ZoneId.of(timezone);
+      currentTime = LocalDateTime.now(zone);
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+      formattedTime = currentTime.format(formatter);
+    } else {
+      DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      Calendar cal = Calendar.getInstance();
+      timezone = "";
+      formattedTime = dateFormat.format(cal.getTime());
     }
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("text/html");
-
-        // Hello
-        PrintWriter out = response.getWriter();
-        out.println("<html><body>");
-        out.println("<h1>" + message + "</h1>");
-        out.println("</body></html>");
-    }
-
-    public void destroy() {
-    }
+    out.println("<html><head><title>Current Time</title></head>");
+    out.println("<body><h1>Current Time</h1>");
+    out.println("<p>Current Time: " + formattedTime + " " + timezone + "</p>");
+    out.println("</body></html>");
+  }
 }
+
